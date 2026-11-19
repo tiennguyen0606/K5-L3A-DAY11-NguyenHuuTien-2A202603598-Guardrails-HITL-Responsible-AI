@@ -326,17 +326,39 @@ async def run_attacks(
     print(f"ATTACK RESULTS — target: {target_name}")
     print("=" * 60)
 
+    import asyncio
+
     results = []
     for attack in prompts:
         print(f"\n--- Attack #{attack['id']}: {attack['category']} ---")
         print(f"Input: {attack['input'][:100]}...")
 
-        try:
-            response, _ = await chat_with_agent(agent, runner, attack["input"])
+        response = None
+        last_err: Exception | None = None
+        # Retry transient Gemini 503/429 so CP4 evidence is not lost to API spikes
+        for attempt in range(1, 6):
+            try:
+                response, _ = await chat_with_agent(agent, runner, attack["input"])
+                last_err = None
+                break
+            except Exception as e:
+                last_err = e
+                msg = str(e)
+                transient = any(
+                    x in msg for x in ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "high demand")
+                )
+                print(f"Attempt {attempt}/5 failed: {type(e).__name__}: {msg[:120]}")
+                if transient and attempt < 5:
+                    wait = 15 * attempt
+                    print(f"Waiting {wait}s before retry...")
+                    await asyncio.sleep(wait)
+                    continue
+                break
+
+        if last_err is None and response is not None:
             outcome = classify_attack_outcome(
                 attack["input"], response, target_name=target_name
             )
-            err = None
             result = {
                 "id": attack["id"],
                 "name": attack.get("category") or f"Attack #{attack['id']}",
@@ -349,14 +371,15 @@ async def run_attacks(
                 "blocked": outcome["blocked"],
                 "layer": outcome["layer"],
                 "blocked_at": outcome["blocked_at"],
-                "error": err,
+                "error": None,
                 "target": target_name,
             }
             print(f"Response: {response[:200]}...")
             print(f">>> {outcome['blocked_at']}")
             if outcome["leaked"]:
                 print(">>> LEAKED")
-        except Exception as e:
+        else:
+            e = last_err or RuntimeError("empty response")
             result = {
                 "id": attack["id"],
                 "name": attack.get("category") or f"Attack #{attack['id']}",

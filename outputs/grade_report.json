@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-19T11:53:09.026336+00:00",
+  "generated_at": "2026-11-19T15:42:00.820647+00:00",
   "submission_dir": "D:\\Downloads\\K5-L3A-NguyenHuuTien-2A202603598-Guardrails-HITL-Responsible-AI",
   "technical_failure": false,
   "packaging": {
@@ -39,7 +39,7 @@
     "red_team": {
       "llm_provider": "gemini",
       "llm_model": "gemini-3.5-flash",
-      "unsafe_leaks": 0,
+      "unsafe_leaks": 3,
       "unsafe_total": 5,
       "guards_leaks": 0,
       "guards_total": 5
@@ -47,7 +47,7 @@
   },
   "public_tests": {
     "returncode": 0,
-    "stdout": "..........                                                               [100%]\n10 passed in 6.67s\n",
+    "stdout": "..........                                                               [100%]\n10 passed in 7.90s\n",
     "stderr": "",
     "technical_failure": false
   },

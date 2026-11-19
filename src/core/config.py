@@ -36,8 +36,8 @@ PROVIDER_OPENROUTER = "openrouter"
 
 # --- Blue Team (LOCKED) ---
 BLUE_PROVIDER = PROVIDER_OPENROUTER
-BLUE_MODEL = "liquid/lfm-3-1.7b:free"
-OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+BLUE_MODEL = os.environ.get("BLUE_MODEL", "lfm3-1.7b").strip() or "lfm3-1.7b"
+OPENROUTER_BASE_URL = os.environ.get("OPENROUTER_BASE_URL", "https://api.liquid.ai/openai/v1").strip() or "https://api.liquid.ai/openai/v1"
 DEFAULT_OPENROUTER_MODEL = BLUE_MODEL  # alias
 
 # --- Red Team ---
